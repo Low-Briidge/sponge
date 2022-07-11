@@ -4,16 +4,38 @@
 #include "byte_stream.hh"
 
 #include <cstdint>
+#include <list>
 #include <string>
+#include <utility>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
+struct node{
+    std::string data;
+    uint64_t index;
+    node():data(""), index(0){};
+    node(std::string d, const uint64_t i):data(std::move(d)), index(i){}
+};
+struct cmp {
+    bool operator()(node &a, node &b) { return a.index > b.index; }
+};
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+    size_t _size = 0;
+    size_t _unassembled_size = 0;
+    size_t _next_expect_index = 0;
+    size_t _total_length = 0;
+    bool _eof = false;
+
+
+    std::list<node> _queue{};
+
+    void merge(const std::string &data, const size_t index);
+    void push_all();
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
