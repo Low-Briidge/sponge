@@ -12,7 +12,8 @@ void DUMMY_CODE(Targs &&... /* unused */) {}
 
 using namespace std;
 
-ByteStream::ByteStream(const size_t _capacity) : capacity(_capacity){}
+ByteStream::ByteStream(const size_t _capacity) : capacity(_capacity) {
+}
 
 size_t ByteStream::write(const string &data) {
     size_t count = 0;

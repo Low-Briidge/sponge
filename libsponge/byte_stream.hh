@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <string>
+#include <bits/stdc++.h>
 
 //! \brief An in-order byte stream.
 
