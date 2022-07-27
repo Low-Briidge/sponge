@@ -43,6 +43,8 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     // 更新 ackno
     _ackno = unwrap(wrap(_reassembler.stream_out().bytes_written(), _isn), _isn, _ackno);
     _ackno += _syn + _reassembler.stream_out().input_ended();
+    if (_fin && _reassembler.unassembled_bytes() == 0)
+        stream_out().end_input();
 }
 
 optional<WrappingInt32> TCPReceiver::ackno() const {
