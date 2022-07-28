@@ -22,7 +22,9 @@ class TCPConnection {
     bool _linger_after_streams_finish{true};
 
     size_t _time_close = 0;
+    size_t _time_since_last_segment_received = 0;
     bool _is_server = true;
+    bool _rst_flag = false;
     void segment_takeout();
 
   public:

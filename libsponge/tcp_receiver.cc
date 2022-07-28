@@ -11,6 +11,10 @@ void DUMMY_CODE(Targs &&... /* unused */) {}
 using namespace std;
 
 void TCPReceiver::segment_received(const TCPSegment &seg) {
+    if (seg.header().rst) {
+        stream_out().set_error();
+        return;
+    }
     // 接收的第一个报文段包含SYN 和 seqno，可能有数据和FIN
     // 获取TCP头部字段
     // 如果是SYN报文段
