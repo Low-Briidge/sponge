@@ -116,6 +116,12 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     }
     if (_receiver.ackno().has_value()) {
         _receiver.segment_received(seg);
+
+        // Passive close clean
+        if (!_linger_after_streams_finish && !active()) {
+            _sender.stream_in().end_input();
+            return;
+        }
         if (seg.header().ack && _receiver.ackno().has_value())
             _sender.ack_received(seg.header().ackno, seg.header().win);
         _sender.fill_window();
