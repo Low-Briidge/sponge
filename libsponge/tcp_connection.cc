@@ -227,6 +227,10 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
 
     if (flag && _linger_after_streams_finish) {
         _time_close += ms_since_last_tick;
+        if (_time_close >= _cfg.rt_timeout * 10) {
+            _sender.stream_in().end_input();
+            _receiver.stream_out().end_input();
+        }
     }
     segment_takeout();
 }
