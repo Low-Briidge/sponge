@@ -26,6 +26,7 @@ class TCPConnection {
     bool _is_server = true;
     bool _rst_flag = false;
     void segment_takeout();
+    void set_rst();
 
   public:
     //! \name "Input" interface for the writer
