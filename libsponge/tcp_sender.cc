@@ -47,6 +47,10 @@ void TCPSender::fill_window() {
         return;
     }
 
+    if (next_seqno_absolute() > 0
+        and next_seqno_absolute() == bytes_in_flight()) return;
+
+
     if (_stream.input_ended()) _fin = true;
     WrappingInt32 seqno = wrap(next_seqno_absolute(), _isn);
     TCPSegment segment{};
@@ -59,15 +63,15 @@ void TCPSender::fill_window() {
     // 取出的字节数
     int len = min(window - segment.length_in_sequence_space() - bytes_in_flight(), TCPConfig::MAX_PAYLOAD_SIZE);
     // 窗口溢出，直接返回
-    if (len <= 0 && _next_seqno) return;
+    if (len <= 0 && _next_seqno && segment.length_in_sequence_space() == 0) return;
 
     // 填充数据后，最后填充FIN flag
     // 实际能取的数据字节数 + 当前报文段的长度 < 窗口长度
     // 保证还能再塞入一个 FIN flag
-    if (_fin && min(static_cast<uint64_t>(len), _stream.buffer_size()) + segment.length_in_sequence_space() < window) {
+    len = min(static_cast<size_t>(len), _stream.buffer_size());
+    if (_fin && len + segment.length_in_sequence_space() < window && static_cast<size_t>(len) >= _stream.buffer_size()) {
         segment.header().fin = true;
     }
-    len = min(static_cast<size_t>(len), _stream.buffer_size());
     segment.payload() = {_stream.peek_output(len)};
 
     // 发送报文段
