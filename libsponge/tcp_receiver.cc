@@ -26,6 +26,7 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     }
     else {
         if (seg.header().seqno.raw_value() <= _isn.raw_value()) return;
+        if (!_syn) return;
     }
     bool eof = false;
     if (_syn && seg.header().fin) {
