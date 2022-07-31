@@ -1,6 +1,8 @@
 #ifndef SPONGE_LIBSPONGE_BYTE_STREAM_HH
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
+#include "buffer.hh"
+
 #include <deque>
 #include <string>
 #include <bits/stdc++.h>
@@ -26,6 +28,7 @@ class ByteStream {
     size_t have_written = 0;
     size_t have_read = 0;
     std::deque<char> stream{};
+    BufferList _buffer = {};
 
   public:
     //! Construct a stream with room for `capacity` bytes.

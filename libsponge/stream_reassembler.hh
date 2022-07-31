@@ -4,39 +4,43 @@
 #include "byte_stream.hh"
 
 #include <cstdint>
-#include <list>
 #include <string>
-#include <utility>
+#include <list>
+#include <vector>
+#include <algorithm>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
-struct node{
-    std::string data;
+struct data_node {
     uint64_t index;
-    node():data(""), index(0){};
-    node(std::string d, const uint64_t i):data(std::move(d)), index(i){}
+    std::string data;
+    data_node(uint64_t i, std::string d):index(i), data(std::move(d)){}
+    friend bool operator <(const data_node& d1, const data_node& d2) {
+        return d1.index < d2.index;
+    }
 };
-struct cmp {
-    bool operator()(node &a, node &b) { return a.index > b.index; }
-};
+
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
-    size_t _size = 0;
-    size_t _unassembled_size = 0;
-    size_t _next_expect_index = 0;
-    size_t _total_length = 0;
-    bool _eof = false;
-
-
-    std::list<node> _queue{};
-
-    void merge(const std::string &data, const size_t index);
-    void push_all();
-
+    bool _eof_flag = false;
+    bool over = false;
+    uint64_t _next_expect_index = 0;
+    uint64_t _total_bytes = 0;
+    std::vector<data_node> _data{};
+    std::vector<data_node>::iterator find_left_bound(const data_node& target);
+    std::vector<data_node>::iterator find_right_bound(const data_node& target);
+    void merge(const std::string &data, const uint64_t index);
+    void push_to_stream();
+    static bool cmp_left(const data_node& n1, const data_node& n2) {
+        return n1.index < n2.index + n2.data.size() + 1;
+    }
+    static bool cmp_right(const data_node& n1, const data_node& n2) {
+        return n1.index + n1.data.size() + 1 <= n2.index;
+    }
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
     //! \note This capacity limits both the bytes that have been reassembled,
